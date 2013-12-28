@@ -2,10 +2,10 @@ name:                twitter-types
 version:             0.1.0
 license:             BSD3
 license-file:        LICENSE
-author:              Takahiro HIMURA
-maintainer:          Takahiro HIMURA <taka@himura.jp>
+author:              Shohei Yasutake, Takahiro HIMURA
+maintainer:          Shohei Yasutake <amutake.s@gmail.com>
 synopsis:            Twitter JSON parser and types
-description:         This package provides the types of Twitter resources.
+description:         This package provides the types of the Twitter resources.
 category:            Web
 stability:           Experimental
 cabal-version:       >=1.10

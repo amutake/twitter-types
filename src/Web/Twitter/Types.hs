@@ -9,6 +9,7 @@ module Web.Twitter.Types
     , StatusId
     , LanguageCode
     , StreamingAPI (..)
+    , UserStream (..)
     , Status (..)
     , SearchResult (..)
     , SearchStatus (..)
@@ -66,6 +67,20 @@ instance FromJSON StreamingAPI where
       where
         js :: FromJSON a => Parser a
         js = parseJSON v
+    parseJSON v = fail $ show v
+
+data UserStream
+    = UserStreamFriends [UserId]
+    | UserStreamStatus Status
+    deriving (Show, Eq)
+
+instance FromJSON UserStream where
+    parseJSON v@(Object o) =
+        UserStreamFriends <$> (o .: "friends") <|>
+        UserStreamStatus <$> a
+      where
+        a :: FromJSON a => Parser a
+        a = parseJSON v
     parseJSON v = fail $ show v
 
 -- | <https://dev.twitter.com/docs/platform-objects/tweets> 2013-08-13 16:29
