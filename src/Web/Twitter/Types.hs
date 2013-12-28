@@ -11,6 +11,7 @@ module Web.Twitter.Types
     , StreamingAPI (..)
     , UserStream (..)
     , Status (..)
+    , Ids (..)
     , SearchResult (..)
     , SearchStatus (..)
     , SearchMetadata (..)
@@ -95,6 +96,8 @@ data Status = Status
     , statusInReplyToUser :: Maybe UserId
     , statusFavorite :: Maybe Bool
     , statusRetweetCount :: Maybe Integer
+    , statusRetweeted :: Bool
+    , statusRetweetedStatus :: Maybe Status
     , statusUser :: User
     } deriving (Show, Eq)
 
@@ -110,7 +113,26 @@ instance FromJSON Status where
          <*> o .:? "in_reply_to_user_id"
          <*> o .:? "favorited"
          <*> o .:? "retweet_count"
+         <*> o .: "retweeted"
+         <*> o .:? "retweeted_status"
          <*> o .: "user"
+    parseJSON v = fail $ show v
+
+data Ids = Ids
+    { idsIds :: [Integer]
+    , idsNextCursor :: Int
+    , idsNextCursorStr :: String
+    , idsPreviousCursor :: Int
+    , idsPreviousCursorStr :: String
+    } deriving (Show, Eq)
+
+instance FromJSON Ids where
+    parseJSON (Object o) = Ids
+        <$> o .: "ids"
+        <*> o .: "next_cursor"
+        <*> o .: "next_cursor_str"
+        <*> o .: "previous_cursor"
+        <*> o .: "previous_cursor_str"
     parseJSON v = fail $ show v
 
 data SearchResult body = SearchResult
