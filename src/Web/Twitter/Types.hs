@@ -252,23 +252,57 @@ instance FromJSON DirectMessage where
         <*> o .: "entities"
     parseJSON v = fail $ show v
 
-data EventType = Favorite | Unfavorite
-               | ListCreated | ListUpdated | ListMemberAdded
-               | UserUpdate | Block | Unblock | Follow
-               deriving (Show, Eq)
+-- | <https://dev.twitter.com/docs/streaming-apis/messages#Events_event>
+--   done.
+data EventType
+    = AccessRevokedEvent
+    | BlockEvent
+    | UnblockEvent
+    | FavoriteEvent
+    | UnfavoriteEvent
+    | FollowEvent
+    | UnfollowEvent
+    | ListCreatedEvent
+    | ListDestroyedEvent
+    | ListUpdatedEvent
+    | ListMemberAddedEvent
+    | ListMemberRemovedEvent
+    | ListUserSubscribedEvent
+    | ListUserUnsubscribedEvent
+    | UserUpdateEvent
+    deriving (Show, Eq)
 
-data EventTarget = EventTargetStatus Status
-                 | EventTargetList List
-                 deriving (Show, Eq)
+eventType :: Text -> EventType
+eventType "access_revoked" = AccessRevokedEvent
+eventType "block" = BlockEvent
+eventType "unblock" = UnblockEvent
+eventType "favorite" = FavoriteEvent
+eventType "unfavorite" = UnfavoriteEvent
+eventType "follow" = FollowEvent
+eventType "unfollow" = UnfollowEvent
+eventType "list_created" = ListCreatedEvent
+eventType "list_destroy" = ListDestroyedEvent
+eventType "list_updated" = ListUpdatedEvent
+eventType "list_member_added" = ListMemberAddedEvent
+eventType "list_member_removed" = ListMemberRemovedEvent
+eventType "list_user_subscribed" = ListUserSubscribedEvent
+eventType "list_user_unsubscribed" = ListUserUnsubscribedEvent
+eventType "user_update" = UserUpdateEvent
+
+-- | done.
+data EventTarget
+    = EventTargetStatus Status
+    | EventTargetList List
+    deriving (Show, Eq)
 
 instance FromJSON EventTarget where
-    parseJSON v@(Object _) =
+    parseJSON v =
         EventTargetStatus <$> parseJSON v <|>
         EventTargetList <$> parseJSON v
-    parseJSON v = fail $ show v
 
+-- | done.
 data Event = Event
-    { eventEvent :: Text
+    { eventEvent :: EventType
     , eventSource :: User
     , eventTarget :: User
     , eventTargetObject :: Maybe EventTarget
@@ -277,7 +311,7 @@ data Event = Event
 
 instance FromJSON Event where
     parseJSON (Object o) = Event
-        <$> o .: "event"
+        <$> (eventType <$> o .: "event")
         <*> o .: "source"
         <*> o .: "target"
         <*> o .:? "target_object"
