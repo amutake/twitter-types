@@ -93,7 +93,7 @@ instance FromJSON User where
         <*> o .:? "following"
         <*> o .:? "follow_request_sent"
         <*> o .:? "notifications"
-        <*> o .:? "entities_test"
+        <*> o .:? "entities"
     parseJSON v = fail $ show v
 
 data UserEntities = UserEntities

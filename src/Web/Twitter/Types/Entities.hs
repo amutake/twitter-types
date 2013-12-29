@@ -13,6 +13,7 @@ module Web.Twitter.Types.Entities
 
 import Control.Applicative ((<$>), (<*>), pure)
 import Data.Aeson (FromJSON (..), Value (..), withText, (.:), (.:?))
+import Data.Int (Int64)
 import Data.Maybe (maybeToList)
 import Data.Text (Text, unpack)
 
@@ -36,7 +37,7 @@ instance FromJSON Entities where
         <*> l "user_mentions"
         <*> l "media"
       where
-        l t = maybeToList <$> o .:? t
+        l t = concat . maybeToList <$> o .:? t
     parseJSON v = fail $ "entities" ++ show v
 
 -- | done.
@@ -123,7 +124,7 @@ instance FromJSON MediaType where
         f "photo" = pure Photo
         f t = fail $ "Unknown media type: " ++ unpack t
 
-type MediaId = Integer
+type MediaId = Int64
 
 -- | <https://dev.twitter.com/docs/platform-objects/entities#obj-sizes>
 data MediaSizes = MediaSizes
@@ -145,7 +146,7 @@ instance FromJSON MediaSizes where
 data MediaSize = MediaSize
     { mediaSizeWidth :: Int
     , mediaSizeHeight :: Int
-    , mediaSizeResize :: Text
+    , mediaSizeResize :: MediaSizeResize
     } deriving (Show, Eq)
 
 instance FromJSON MediaSize where
