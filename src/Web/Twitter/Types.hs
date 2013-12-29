@@ -20,7 +20,7 @@ module Web.Twitter.Types
     , DirectMessage (..)
     , EventTarget (..)
     , Event (..)
-    , DeleteStatus (..)
+    , StatusDeletion (..)
     , User (..)
     , List (..)
     , Entities (..)
@@ -53,7 +53,7 @@ data StreamingAPI
     = SStatus Status
     | SRetweetedStatus RetweetedStatus
     | SEvent Event
-    | SDelete DeleteStatus
+    | SDelete StatusDeletion
       -- | SScrubGeo ScrubGeo
     | SFriends Friends
     | SUnknown Value
@@ -76,7 +76,7 @@ data UserStream
     = UserStreamFriends [UserId]
     | UserStreamStatus Status
     | UserStreamEvent Event
-    | UserStreamDeleteStatus DeleteStatus
+    | UserStreamStatusDeletion StatusDeletion
     deriving (Show, Eq)
 
 instance FromJSON UserStream where
@@ -84,7 +84,7 @@ instance FromJSON UserStream where
         UserStreamFriends <$> (o .: "friends") <|>
         UserStreamStatus <$> a <|>
         UserStreamEvent <$> a <|>
-        UserStreamDeleteStatus <$> a
+        UserStreamStatusDeletion <$> a
       where
         a :: FromJSON a => Parser a
         a = parseJSON v
@@ -274,17 +274,17 @@ instance FromJSON Event where
         <*> o .: "created_at"
     parseJSON v = fail $ show v
 
-data DeleteStatus = DeleteStatus
-    { deleteStatusId  :: StatusId
-    , deleteStatusIdStr :: String
-    , deleteStatusUserId :: UserId
-    , deleteStatusUserIdStr :: String
+data StatusDeletion = StatusDeletion
+    { statusDeletionId  :: StatusId
+    , statusDeletionIdStr :: String
+    , statusDeletionUserId :: UserId
+    , statusDeletionUserIdStr :: String
     } deriving (Show, Eq)
 
-instance FromJSON DeleteStatus where
+instance FromJSON StatusDeletion where
   parseJSON (Object o) = do
     s <- o .: "delete" >>= (.: "status")
-    DeleteStatus
+    StatusDeletion
         <$> s .: "id"
         <*> s .: "id_str"
         <*> s .: "user_id"
