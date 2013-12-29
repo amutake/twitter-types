@@ -6,6 +6,7 @@ module Web.Twitter.Types
     , Friends
     , URIString
     , UserName
+    , ScreenName
     , StatusId
     , LanguageCode
     , StreamingAPI (..)
@@ -26,7 +27,7 @@ module Web.Twitter.Types
     , EntityIndices
     , Entity (..)
     , HashTagEntity (..)
-    , UserEntity (..)
+    , UserMention (..)
     , URLEntity (..)
     , MediaEntity (..)
     , MediaSize (..)
@@ -44,6 +45,7 @@ type UserId = Integer
 type Friends = [UserId]
 type URIString = ByteString
 type UserName = Text
+type ScreenName = Text
 type StatusId = Integer
 type LanguageCode = String
 
@@ -73,12 +75,16 @@ instance FromJSON StreamingAPI where
 data UserStream
     = UserStreamFriends [UserId]
     | UserStreamStatus Status
+    | UserStreamEvent Event
+    | UserStreamDeleteStatus DeleteStatus
     deriving (Show, Eq)
 
 instance FromJSON UserStream where
     parseJSON v@(Object o) =
         UserStreamFriends <$> (o .: "friends") <|>
-        UserStreamStatus <$> a
+        UserStreamStatus <$> a <|>
+        UserStreamEvent <$> a <|>
+        UserStreamDelete
       where
         a :: FromJSON a => Parser a
         a = parseJSON v
@@ -213,10 +219,10 @@ instance FromJSON RetweetedStatus where
 
 data DirectMessage = DirectMessage
     { dmCreatedAt :: DateString
-    , dmSenderScreenName :: Text
+    , dmSenderScreenName :: ScreenName
     , dmSender :: User
     , dmText :: Text
-    , dmRecipientScreeName :: Text
+    , dmRecipientScreeName :: ScreenName
     , dmId :: StatusId
     , dmRecipient :: User
     , dmRecipientId :: UserId
@@ -241,50 +247,54 @@ data EventType = Favorite | Unfavorite
                | UserUpdate | Block | Unblock | Follow
                deriving (Show, Eq)
 
-data EventTarget = ETUser User | ETStatus Status | ETList List | ETUnknown Value
+data EventTarget = EventTargetStatus Status
+                 | EventTargetList List
                  deriving (Show, Eq)
 
 instance FromJSON EventTarget where
     parseJSON v@(Object _) =
-        ETUser <$> parseJSON v <|>
-        ETStatus <$> parseJSON v <|>
-        ETList <$> parseJSON v <|>
-        return (ETUnknown v)
+        EventTargetStatus <$> parseJSON v <|>
+        EventTargetList <$> parseJSON v
     parseJSON v = fail $ show v
 
 data Event = Event
-    { evCreatedAt :: DateString
-    , evTargetObject :: Maybe EventTarget
-    , evEvent :: Text
-    , evTarget :: EventTarget
-    , evSource :: EventTarget
+    { eventEvent :: Text
+    , eventSource :: User
+    , eventTarget :: User
+    , eventTargetObject :: Maybe EventTarget
+    , eventCreatedAt :: DateString
     } deriving (Show, Eq)
 
 instance FromJSON Event where
     parseJSON (Object o) = Event
-        <$> o .: "created_at"
-        <*> o .:? "target_object"
-        <*> o .: "event"
-        <*> o .: "target"
+        <$> o .: "event"
         <*> o .: "source"
+        <*> o .: "target"
+        <*> o .:? "target_object"
+        <*> o .: "created_at"
     parseJSON v = fail $ show v
 
-data Delete = Delete
-    { delId  :: StatusId
-    , delUserId :: UserId
+data DeleteStatus = DeleteStatus
+    { deleteStatusId  :: StatusId
+    , deleteStatusIdStr :: String
+    , deleteStatusUserId :: UserId
+    , deleteStatusUserIdStr :: String
     } deriving (Show, Eq)
 
-instance FromJSON Delete where
+instance FromJSON DeleteStatus where
   parseJSON (Object o) = do
     s <- o .: "delete" >>= (.: "status")
-    Delete <$> s .: "id"
-           <*> s .: "user_id"
+    DeleteStatus
+        <$> s .: "id"
+        <*> s .: "id_str"
+        <*> s .: "user_id"
+        <*> s .: "user_id_str"
   parseJSON v = fail $ show v
 
 data User = User
     { userId :: UserId
     , userName :: UserName
-    , userScreenName :: Text
+    , userScreenName :: ScreenName
     , userDescription :: Maybe Text
     , userLocation :: Maybe Text
     , userProfileImageURL :: Maybe URIString
@@ -344,13 +354,22 @@ instance FromJSON HashTagEntity where
         <$> o .: "text"
     parseJSON v = fail $ show v
 
--- | The 'UserEntity' is just a wrapper around 'User' which is
---   a bit wasteful, and should probably be replaced by just
---   storing the id, name and screen name here.
-data UserEntity = UserEntity User deriving (Show, Eq)
+data UserMention = UserMention
+    { userMentionId :: UserId
+    , userMentionIdStr :: String
+    , userMentionIndices :: [Int]
+    , userMentionName :: UserName
+    , userMentionScreenName :: ScreenName
+    } deriving (Show, Eq)
 
-instance FromJSON UserEntity where
-    parseJSON = (UserEntity <$>) . parseJSON
+instance FromJSON UserMention where
+    parseJSON (Object o) = UserMention
+        <$> o .: "id"
+        <*> o .: "id_str"
+        <*> o .: "indices"
+        <*> o .: "name"
+        <*> o .: "screen_name"
+    parseJSON v = fail $ show v
 
 data URLEntity = URLEntity
     { ueURL :: URIString -- ^ The URL that was extracted
@@ -400,7 +419,7 @@ instance FromJSON MediaSize where
 -- | Entity handling.
 data Entities = Entities
     { enHashTags :: [Entity HashTagEntity]
-    , enUserMentions :: [Entity UserEntity]
+    , enUserMentions :: [Entity UserMention]
     , enURLs :: [Entity URLEntity]
     , enMedia :: Maybe [Entity MediaEntity]
     } deriving (Show, Eq)
