@@ -77,6 +77,7 @@ data UserStream
     | UserStreamStatus Status
     | UserStreamEvent Event
     | UserStreamStatusDeletion StatusDeletion
+    | UserStreamDirectMessage DirectMessage
     deriving (Show, Eq)
 
 instance FromJSON UserStream where
@@ -84,7 +85,8 @@ instance FromJSON UserStream where
         UserStreamFriends <$> (o .: "friends") <|>
         UserStreamStatus <$> a <|>
         UserStreamEvent <$> a <|>
-        UserStreamStatusDeletion <$> a
+        UserStreamStatusDeletion <$> a <|>
+        UserStreamDirectMessage <$> (o .: "direct_message")
       where
         a :: FromJSON a => Parser a
         a = parseJSON v
@@ -218,28 +220,36 @@ instance FromJSON RetweetedStatus where
     parseJSON v = fail $ show v
 
 data DirectMessage = DirectMessage
-    { dmCreatedAt :: DateString
-    , dmSenderScreenName :: ScreenName
-    , dmSender :: User
-    , dmText :: Text
-    , dmRecipientScreeName :: ScreenName
-    , dmId :: StatusId
-    , dmRecipient :: User
-    , dmRecipientId :: UserId
-    , dmSenderId :: UserId
+    { directMessageId :: StatusId
+    , directMessageIdStr :: String
+    , directMessageText :: Text
+    , directMessageSender :: User
+    , directMessageSenderId :: UserId
+    , directMessageSenderIdStr :: String
+    , directMessageSenderScreenName :: ScreenName
+    , directMessageRecipient :: User
+    , directMessageRecipientId :: UserId
+    , directMessageRecipientIdStr :: String
+    , directMessageRecipientScreeName :: ScreenName
+    , directMessageCreatedAt :: DateString
+    , directMessageEntities :: Entities
     } deriving (Show, Eq)
 
 instance FromJSON DirectMessage where
     parseJSON (Object o) = DirectMessage
-        <$> o .: "created_at"
-        <*> o .: "sender_screen_name"
-        <*> o .: "sender"
+        <$> o .: "id"
+        <*> o .: "id_str"
         <*> o .: "text"
-        <*> o .: "recipient_screen_name"
-        <*> o .: "id"
+        <*> o .: "sender"
+        <*> o .: "sender_id"
+        <*> o .: "sender_id_str"
+        <*> o .: "sender_screen_name"
         <*> o .: "recipient"
         <*> o .: "recipient_id"
-        <*> o .: "sender_id"
+        <*> o .: "recipient_id_str"
+        <*> o .: "recipient_screen_name"
+        <*> o .: "created_at"
+        <*> o .: "entities"
     parseJSON v = fail $ show v
 
 data EventType = Favorite | Unfavorite
