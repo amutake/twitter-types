@@ -389,68 +389,112 @@ instance FromJSON List where
         <*> o .:  "user"
     parseJSON v = fail $ show v
 
-data HashTagEntity = HashTagEntity
+-- | done.
+data HashTag = HashTag
     { hashTagText :: Text -- ^ The Hashtag text
+    , hashTagIndices :: [Int]
     } deriving (Show, Eq)
 
-instance FromJSON HashTagEntity where
-    parseJSON (Object o) = HashTagEntity
+instance FromJSON HashTag where
+    parseJSON (Object o) = HashTag
         <$> o .: "text"
+        <*> o .: "indices"
     parseJSON v = fail $ show v
 
+-- | done.
 data UserMention = UserMention
     { userMentionId :: UserId
     , userMentionIdStr :: String
-    , userMentionIndices :: [Int]
-    , userMentionName :: UserName
     , userMentionScreenName :: ScreenName
+    , userMentionName :: UserName
+    , userMentionIndices :: [Int]
     } deriving (Show, Eq)
 
 instance FromJSON UserMention where
     parseJSON (Object o) = UserMention
         <$> o .: "id"
         <*> o .: "id_str"
-        <*> o .: "indices"
-        <*> o .: "name"
         <*> o .: "screen_name"
+        <*> o .: "name"
+        <*> o .: "indices"
     parseJSON v = fail $ show v
 
-data URLEntity = URLEntity
-    { ueURL :: URIString -- ^ The URL that was extracted
-    , ueExpanded :: URIString -- ^ The fully resolved URL (only for t.co links)
-    , ueDisplay  :: Text    -- ^ Not a URL but a string to display instead of the URL (only for t.co links)
+-- | done.
+data Url = Url
+    { urlUrl :: UrlString -- ^ The URL that was extracted
+    , urlDisplayUrl  :: Text -- ^ Not a URL but a string to display instead of the URL (only for t.co links)
+    , urlExpandedUrl :: UrlString -- ^ The fully resolved URL (only for t.co links)
+    , urlIndices :: [Int]
     } deriving (Show, Eq)
 
-instance FromJSON URLEntity where
-    parseJSON (Object o) = URLEntity
-        <$> o .:  "url"
-        <*> o .:  "expanded_url"
-        <*> o .:  "display_url"
+instance FromJSON Url where
+    parseJSON (Object o) = Url
+        <$> o .: "url"
+        <*> o .: "display_url"
+        <*> o .: "expanded_url"
+        <*> o .: "indices"
     parseJSON v = fail $ show v
 
-data MediaEntity = MediaEntity
-    { meType :: Text
-    , meId :: StatusId
-    , meSizes :: HashMap Text MediaSize
-    , meMediaURL :: URIString
-    , meMediaURLHttps :: URIString
-    , meURL :: URLEntity
+-- | <https://dev.twitter.com/docs/platform-objects/entities#obj-media>
+--   done.
+data Media = Media
+    { mediaType :: MediaType
+    , mediaId :: MediaId
+    , mediaIdStr :: String
+    , mediaMediaUrl :: Url
+    , mediaMediaUrlHttps :: Url
+    , mediaUrl :: Url
+    , mediaDisplayUrl :: Url
+    , mediaExpandedUrl :: Url
+    , mediaSizes :: MediaSizes
+    , mediaIndices :: [Int]
     } deriving (Show, Eq)
 
 instance FromJSON MediaEntity where
     parseJSON v@(Object o) = MediaEntity
         <$> o .: "type"
         <*> o .: "id"
-        <*> o .: "sizes"
+        <*> o .: "id_str"
         <*> o .: "media_url"
         <*> o .: "media_url_https"
-        <*> parseJSON v
+        <*> o .: "url"
+        <*> o .: "display_url"
+        <*> o .: "expanded_url"
+        <*> o .: "sizes"
+        <*> o .: "indices"
     parseJSON v = fail $ show v
 
+-- | done.
+data MediaType = Photo deriving (Show, Eq)
+
+instance FromJSON MediaType where
+    parseJSON = withText "Text" f
+      where
+        f "photo" = pure Photo
+
+type MediaId = Integer
+
+-- | <https://dev.twitter.com/docs/platform-objects/entities#obj-sizes>
+data MediaSizes = MediaSizes
+    { mediaSizeSmall :: MediaSize
+    , mediaSizeMedium :: MediaSize
+    , mediaSizeLarge :: MediaSize
+    , mediaSizeThumb :: MediaSize
+    } deriving (Show, Eq)
+
+instance FromJSON MediaSizes where
+    parseJSON (Object o) = MediaSizes
+        <$> o .: "small"
+        <*> o .: "medium"
+        <*> o .: "large"
+        <*> o .: "thumb"
+    parseJSON v = fail $ show v
+
+-- | <https://dev.twitter.com/docs/platform-objects/entities#obj-size>
 data MediaSize = MediaSize
-    { msWidth :: Int
-    , msHeight :: Int
-    , msResize :: Text
+    { mediaSizeWidth :: Int
+    , mediaSizeHeight :: Int
+    , mediaSizeResize :: Text
     } deriving (Show, Eq)
 
 instance FromJSON MediaSize where
@@ -460,35 +504,32 @@ instance FromJSON MediaSize where
         <*> o .: "resize"
     parseJSON v = fail $ show v
 
+-- | done.
+data MediaSizeResize
+    = MediaSizeResizeFit
+    | MediaSizeResizeCrop
+    deriving (Show, Eq)
+
+instance FromJSON MediaSizeResize where
+    parseJSON = withText "Text" f
+      where
+        f "fit" = pure MediaSizeResizeFit
+        f "crop" = pure MediaSizeResizeCrop
+
 -- | Entity handling.
+--   <https://dev.twitter.com/docs/platform-objects/entities> 2013-12-16 15:46
+--   done.
 data Entities = Entities
-    { enHashTags :: [Entity HashTagEntity]
-    , enUserMentions :: [Entity UserMention]
-    , enURLs :: [Entity URLEntity]
-    , enMedia :: Maybe [Entity MediaEntity]
+    { entityHashTags :: [HashTag]
+    , entityURLs :: [Url]
+    , entityUserMentions :: [UserMention]
+    , entityMedia :: [Media]
     } deriving (Show, Eq)
 
 instance FromJSON Entities where
     parseJSON (Object o) = Entities
         <$> o .: "hashtags"
-        <*> o .: "user_mentions"
         <*> o .: "urls"
-        <*> o .:? "media"
-    parseJSON v = fail $ show v
-
--- | The character positions the Entity was extracted from
---
---   This is experimental implementation.
---   This may be replaced by more definite types.
-type EntityIndices = [Int]
-
-data Entity a = Entity
-    { entityBody :: a -- ^ The detail information of the specific entity types (HashTag, URL, User)
-    , entityIndices :: EntityIndices -- ^ The character positions the Entity was extracted from
-    } deriving (Show, Eq)
-
-instance FromJSON a => FromJSON (Entity a) where
-    parseJSON v@(Object o) = Entity
-        <$> parseJSON v
-        <*> o .: "indices"
+        <*> o .: "user_mentions"
+        <*> o .: "media"
     parseJSON v = fail $ show v
