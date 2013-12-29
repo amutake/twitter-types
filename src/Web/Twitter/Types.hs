@@ -20,7 +20,7 @@ module Web.Twitter.Types
     , DirectMessage (..)
     , EventTarget (..)
     , Event (..)
-    , Delete (..)
+    , DeleteStatus (..)
     , User (..)
     , List (..)
     , Entities (..)
@@ -53,7 +53,7 @@ data StreamingAPI
     = SStatus Status
     | SRetweetedStatus RetweetedStatus
     | SEvent Event
-    | SDelete Delete
+    | SDelete DeleteStatus
       -- | SScrubGeo ScrubGeo
     | SFriends Friends
     | SUnknown Value
@@ -84,7 +84,7 @@ instance FromJSON UserStream where
         UserStreamFriends <$> (o .: "friends") <|>
         UserStreamStatus <$> a <|>
         UserStreamEvent <$> a <|>
-        UserStreamDelete
+        UserStreamDeleteStatus <$> a
       where
         a :: FromJSON a => Parser a
         a = parseJSON v
