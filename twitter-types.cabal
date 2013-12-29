@@ -18,13 +18,17 @@ source-repository head
 
 library
   exposed-modules:     Web.Twitter.Types
-                       Web.Twitter.Entities
+                       Web.Twitter.Types.Common
+                       Web.Twitter.Types.Entities
+                       Web.Twitter.Types.List
+                       Web.Twitter.Types.Search
+                       Web.Twitter.Types.Status
+                       Web.Twitter.Types.StreamMessage
+                       Web.Twitter.Types.User
   build-depends:       base== 4.*
-                     , http-types
-                     , aeson >= 0.3.2.2
                      , bytestring
                      , text
-                     , unordered-containers
+                     , aeson
   hs-source-dirs:      src
   ghc-options:         -Wall
   default-extensions:  OverloadedStrings

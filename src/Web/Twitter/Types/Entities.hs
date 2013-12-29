@@ -2,7 +2,6 @@ module Web.Twitter.Types.Entities
     ( Entities (..)
     , HashTag (..)
     , Url (..)
-    , UrlString
     , UserMention (..)
     , Media (..)
     , MediaType (..)
@@ -14,7 +13,7 @@ module Web.Twitter.Types.Entities
 
 import Control.Applicative ((<$>), (<*>), pure)
 import Data.Aeson (FromJSON (..), Value (..), withText, (.:))
-import Data.Text (Text)
+import Data.Text (Text, unpack)
 
 import Web.Twitter.Types.Common
 
@@ -62,8 +61,6 @@ instance FromJSON Url where
         <*> o .: "expanded_url"
         <*> o .: "indices"
     parseJSON v = fail $ show v
-
-type UrlString = Text
 
 -- | done.
 data UserMention = UserMention
@@ -119,6 +116,7 @@ instance FromJSON MediaType where
     parseJSON = withText "Text" f
       where
         f "photo" = pure Photo
+        f t = fail $ "Unknown media type: " ++ unpack t
 
 type MediaId = Integer
 
@@ -163,3 +161,4 @@ instance FromJSON MediaSizeResize where
       where
         f "fit" = pure MediaSizeResizeFit
         f "crop" = pure MediaSizeResizeCrop
+        f t = fail $ "Unknown media resize: " ++ unpack t
