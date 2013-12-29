@@ -1,10 +1,14 @@
-module Web.Twitter.Types.User where
+module Web.Twitter.Types.User
+    ( User (..)
+    , UserEntities (..)
+    ) where
 
 import Control.Applicative ((<$>), (<*>))
 import Data.Aeson (FromJSON (..), Value (..), (.:), (.:?))
 import Data.Text (Text)
 
 import Web.Twitter.Types.Common
+import Web.Twitter.Types.Entities
 
 type ColorCode = Text -- TODO
 
@@ -14,7 +18,7 @@ data User = User
     , userIdStr :: String
     , userName :: UserName
     , userScreenName :: ScreenName
-    , userLocation :: Text
+    , userLocation :: Maybe Text
     , userUrl :: Maybe UrlString
     , userDescription :: Maybe Text
     , userProtected :: Bool
@@ -44,9 +48,10 @@ data User = User
     , userProfileUseBackgroundImage :: Bool
     , userDefaultProfile :: Bool
     , userDefaultProfileImage :: Bool
-    , userFollowing :: Maybe Value -- TODO
-    , userFollowRequestSent :: Maybe Value -- TODO
-    , userNotifications :: Maybe Value -- TODO
+    , userFollowing :: Maybe Bool
+    , userFollowRequestSent :: Maybe Bool
+    , userNotifications :: Maybe Bool
+    , userEntities :: Maybe UserEntities
     } deriving (Show, Eq)
 
 instance FromJSON User where
@@ -55,8 +60,8 @@ instance FromJSON User where
         <*> o .: "id_str"
         <*> o .: "name"
         <*> o .: "screen_name"
-        <*> o .: "location"
-        <*> o .: "url"
+        <*> o .:? "location"
+        <*> o .:? "url"
         <*> o .:? "description"
         <*> o .: "protected"
         <*> o .: "followers_count"
@@ -74,7 +79,7 @@ instance FromJSON User where
         <*> o .: "is_translator"
         <*> o .: "profile_background_color"
         <*> o .: "profile_background_image_url"
-        <*> o .: "profile_background_url_https"
+        <*> o .: "profile_background_image_url_https"
         <*> o .: "profile_background_tile"
         <*> o .: "profile_image_url"
         <*> o .: "profile_image_url_https"
@@ -85,7 +90,17 @@ instance FromJSON User where
         <*> o .: "profile_use_background_image"
         <*> o .: "default_profile"
         <*> o .: "default_profile_image"
-        <*> o .: "following"
-        <*> o .: "follow_request_sent"
-        <*> o .: "notifications"
+        <*> o .:? "following"
+        <*> o .:? "follow_request_sent"
+        <*> o .:? "notifications"
+        <*> o .:? "entities_test"
+    parseJSON v = fail $ show v
+
+data UserEntities = UserEntities
+    { userEntitiesDescription :: Entities
+    } deriving (Show, Eq)
+
+instance FromJSON UserEntities where
+    parseJSON (Object o) = UserEntities
+        <$> o .: "description"
     parseJSON v = fail $ show v

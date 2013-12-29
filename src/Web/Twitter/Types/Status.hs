@@ -28,13 +28,13 @@ data Status = Status
     , statusContributors :: Maybe Contributors
     , statusRetweetedStatus :: Maybe Status
     , statusRetweetCount :: Int
-    , statusFavoriteCount :: Int
+    , statusFavoriteCount :: Maybe Int
     , statusEntities :: Entities
     , statusFavorited :: Bool
     , statusRetweeted :: Bool
     , statusPossiblySensitive :: Maybe Bool
-    , statusFilterLevel :: Text -- TODO
-    , statusLong :: Text -- TODO
+    , statusFilterLevel :: Maybe Text -- TODO
+    , statusLang :: Maybe Text -- TODO
     } deriving (Show, Eq)
 
 instance FromJSON Status where
@@ -57,13 +57,13 @@ instance FromJSON Status where
          <*> o .:? "contributors"
          <*> o .:? "retweeted_status"
          <*> o .: "retweet_count"
-         <*> o .: "favorite_count"
+         <*> o .:? "favorite_count"
          <*> o .: "entities"
          <*> o .: "favorited"
          <*> o .: "retweeted"
          <*> o .:? "possibly_sensitive"
-         <*> o .: "filter_level"
-         <*> o .: "long"
+         <*> o .:? "filter_level"
+         <*> o .:? "lang"
     parseJSON v = fail $ show v
 
 type Coordinates = Value -- TODO

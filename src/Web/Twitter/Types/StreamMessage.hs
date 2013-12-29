@@ -1,5 +1,11 @@
-module Web.Twitter.Types.StreamMessage where
-
+module Web.Twitter.Types.StreamMessage
+    ( UserStreamMessage (..)
+    , Event (..)
+    , EventType (..)
+    , EventTarget (..)
+    , StatusDeletion (..)
+    , DirectMessage (..)
+    ) where
 
 import Control.Applicative ((<$>), (<*>), (<|>), pure)
 import Data.Aeson (FromJSON (..), Value (..), (.:), (.:?), withText)
@@ -30,6 +36,24 @@ instance FromJSON UserStreamMessage where
       where
         a :: FromJSON a => Parser a
         a = parseJSON v
+    parseJSON v = fail $ show v
+
+-- | done.
+data Event = Event
+    { eventEvent :: EventType
+    , eventCreatedAt :: DateString
+    , eventSource :: User
+    , eventTarget :: User
+    , eventTargetObject :: Maybe EventTarget
+    } deriving (Show, Eq)
+
+instance FromJSON Event where
+    parseJSON (Object o) = Event
+        <$> o .: "event"
+        <*> o .: "created_at"
+        <*> o .: "source"
+        <*> o .: "target"
+        <*> o .:? "target_object"
     parseJSON v = fail $ show v
 
 -- | <https://dev.twitter.com/docs/streaming-apis/messages#Events_event>
@@ -82,24 +106,6 @@ instance FromJSON EventTarget where
     parseJSON v =
         EventTargetStatus <$> parseJSON v <|>
         EventTargetList <$> parseJSON v
-
--- | done.
-data Event = Event
-    { eventEvent :: EventType
-    , eventSource :: User
-    , eventTarget :: User
-    , eventTargetObject :: Maybe EventTarget
-    , eventCreatedAt :: DateString
-    } deriving (Show, Eq)
-
-instance FromJSON Event where
-    parseJSON (Object o) = Event
-        <$> o .: "event"
-        <*> o .: "source"
-        <*> o .: "target"
-        <*> o .:? "target_object"
-        <*> o .: "created_at"
-    parseJSON v = fail $ show v
 
 -- | done.
 data StatusDeletion = StatusDeletion

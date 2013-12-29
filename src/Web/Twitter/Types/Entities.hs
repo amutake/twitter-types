@@ -12,7 +12,8 @@ module Web.Twitter.Types.Entities
     ) where
 
 import Control.Applicative ((<$>), (<*>), pure)
-import Data.Aeson (FromJSON (..), Value (..), withText, (.:))
+import Data.Aeson (FromJSON (..), Value (..), withText, (.:), (.:?))
+import Data.Maybe (maybeToList)
 import Data.Text (Text, unpack)
 
 import Web.Twitter.Types.Common
@@ -21,6 +22,7 @@ import Web.Twitter.Types.Common
 --   done.
 data Entities = Entities
     { entityHashTags :: [HashTag]
+    , entitySymbols :: [Value] -- TODO
     , entityURLs :: [Url]
     , entityUserMentions :: [UserMention]
     , entityMedia :: [Media]
@@ -28,11 +30,14 @@ data Entities = Entities
 
 instance FromJSON Entities where
     parseJSON (Object o) = Entities
-        <$> o .: "hashtags"
-        <*> o .: "urls"
-        <*> o .: "user_mentions"
-        <*> o .: "media"
-    parseJSON v = fail $ show v
+        <$> l "hashtags"
+        <*> l "symbols"
+        <*> l "urls"
+        <*> l "user_mentions"
+        <*> l "media"
+      where
+        l t = maybeToList <$> o .:? t
+    parseJSON v = fail $ "entities" ++ show v
 
 -- | done.
 data HashTag = HashTag
@@ -83,14 +88,14 @@ instance FromJSON UserMention where
 -- | <https://dev.twitter.com/docs/platform-objects/entities#obj-media>
 --   done.
 data Media = Media
-    { mediaType :: MediaType
-    , mediaId :: MediaId
+    { mediaId :: MediaId
     , mediaIdStr :: String
     , mediaMediaUrl :: UrlString
     , mediaMediaUrlHttps :: UrlString
     , mediaUrl :: UrlString
     , mediaDisplayUrl :: UrlString
     , mediaExpandedUrl :: UrlString
+    , mediaType :: MediaType
     , mediaSizes :: MediaSizes
     , mediaIndices :: [Int]
     } deriving (Show, Eq)
