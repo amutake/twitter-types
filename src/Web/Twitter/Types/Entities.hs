@@ -89,14 +89,14 @@ instance FromJSON UserMention where
 -- | <https://dev.twitter.com/docs/platform-objects/entities#obj-media>
 --   done.
 data Media = Media
-    { mediaId :: MediaId
+    { mediaType :: MediaType
+    , mediaId :: MediaId
     , mediaIdStr :: String
     , mediaMediaUrl :: UrlString
     , mediaMediaUrlHttps :: UrlString
     , mediaUrl :: UrlString
     , mediaDisplayUrl :: UrlString
     , mediaExpandedUrl :: UrlString
-    , mediaType :: MediaType
     , mediaSizes :: MediaSizes
     , mediaIndices :: [Int]
     } deriving (Show, Eq)
