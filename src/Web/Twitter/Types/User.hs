@@ -27,8 +27,8 @@ data User = User
     , userListedCount :: Int
     , userCreatedAt :: DateString
     , userFavouritesCount :: Int -- ^ British spelling used in the field name for historical reasons.
-    , userUtcOffset :: Int
-    , userTimeZone :: Text -- TODO
+    , userUtcOffset :: Maybe Int
+    , userTimeZone :: Maybe Text -- TODO
     , userGeoEnabled :: Bool
     , userVerified :: Bool
     , userStatusesCount :: Int
@@ -41,6 +41,7 @@ data User = User
     , userProfileBackgroundTile :: Bool
     , userProfileImageUrl :: UrlString
     , userProfileImageUrlHttps :: UrlString
+    , userProfileBannerUrl :: Maybe UrlString
     , userProfileLinkColor :: ColorCode
     , userProfileSidebarBorderColor :: ColorCode
     , userProfileSidebarFillColor :: ColorCode
@@ -69,7 +70,7 @@ instance FromJSON User where
         <*> o .: "listed_count"
         <*> o .: "created_at"
         <*> o .: "favourites_count"
-        <*> o .: "utc_offset"
+        <*> o .:? "utc_offset"
         <*> o .: "time_zone"
         <*> o .: "geo_enabled"
         <*> o .: "verified"
@@ -83,6 +84,7 @@ instance FromJSON User where
         <*> o .: "profile_background_tile"
         <*> o .: "profile_image_url"
         <*> o .: "profile_image_url_https"
+        <*> o .:? "profile_banner_url"
         <*> o .: "profile_link_color"
         <*> o .: "profile_sidebar_border_color"
         <*> o .: "profile_sidebar_fill_color"

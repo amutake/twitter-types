@@ -22,7 +22,7 @@ data Status = Status
     , statusInReplyToUserIdStr :: Maybe String
     , statusInReplyToScreenName :: Maybe ScreenName
     , statusUser :: User
-    , statusGeo :: Maybe Text -- TODO
+    , statusGeo :: Maybe Coordinates -- TODO
     , statusCoordinates :: Maybe Coordinates
     , statusPlace :: Maybe Place
     , statusContributors :: Maybe Contributors
