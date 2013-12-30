@@ -19,6 +19,7 @@ source-repository head
 library
   exposed-modules:     Web.Twitter.Types
                        Web.Twitter.Types.Common
+                       Web.Twitter.Types.DirectMessage
                        Web.Twitter.Types.Entities
                        Web.Twitter.Types.List
                        Web.Twitter.Types.Search

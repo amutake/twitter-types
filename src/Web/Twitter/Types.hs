@@ -1,5 +1,6 @@
 module Web.Twitter.Types
     ( module Web.Twitter.Types.Common
+    , module Web.Twitter.Types.DirectMessage
     , module Web.Twitter.Types.Entities
     , module Web.Twitter.Types.List
     , module Web.Twitter.Types.Search
@@ -9,6 +10,7 @@ module Web.Twitter.Types
     )  where
 
 import Web.Twitter.Types.Common
+import Web.Twitter.Types.DirectMessage
 import Web.Twitter.Types.Entities
 import Web.Twitter.Types.List
 import Web.Twitter.Types.Search
