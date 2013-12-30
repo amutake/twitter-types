@@ -40,7 +40,7 @@ instance FromJSON UserStreamMessage where
 
 -- | done.
 data Event = Event
-    { eventEvent :: EventType
+    { eventType :: EventType
     , eventCreatedAt :: DateString
     , eventSource :: User
     , eventTarget :: User
