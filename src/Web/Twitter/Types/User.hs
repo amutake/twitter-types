@@ -4,10 +4,13 @@ module Web.Twitter.Types.User
     , Account (..)
     , TimeZone (..)
     , SleepTime (..)
+    , TrendLocation (..)
+    , PlaceType (..)
     ) where
 
 import Control.Applicative ((<$>), (<*>))
 import Data.Aeson (FromJSON (..), Value (..), (.:), (.:?))
+import Data.Maybe (maybeToList)
 import Data.Text (Text)
 
 import Web.Twitter.Types.Common
@@ -120,8 +123,9 @@ data Account = Account
     , accountGeoEnabled :: Bool
     , accountLanguage :: LanguageCode
     , accountDiscoverableByEmail :: Bool
-    , accountDiscoverableByMobilePhone :: Bool
+    , accountDiscoverableByMobilePhone :: Maybe Bool
     , accountDisplaySensitiveMedia :: Bool
+    , accountTrendLocation :: [TrendLocation]
     } deriving (Show, Eq)
 
 instance FromJSON Account where
@@ -135,14 +139,15 @@ instance FromJSON Account where
         <*> o .: "geo_enabled"
         <*> o .: "language"
         <*> o .: "discoverable_by_email"
-        <*> o .: "discoverable_by_mobile_phone"
+        <*> o .:? "discoverable_by_mobile_phone"
         <*> o .: "display_sensitive_media"
+        <*> (concat . maybeToList <$> o .:? "trend_location")
     parseJSON v = fail $ show v
 
 data TimeZone = TimeZone
     { timeZoneName :: Text
     , timeZoneUtcOffset :: Int
-    , timeZoneTZInfoName :: Text -- TODO: record name?
+    , timeZoneTzInfoName :: Text
     } deriving (Show, Eq)
 
 instance FromJSON TimeZone where
@@ -154,8 +159,8 @@ instance FromJSON TimeZone where
 
 data SleepTime = SleepTime
     { sleepTimeEnabled :: Bool
-    , sleepTimeEndTime :: Maybe Value -- TODO
-    , sleepTimeStartTime :: Maybe Value -- TODO
+    , sleepTimeStartTime :: Maybe Int
+    , sleepTimeEndTime :: Maybe Int
     } deriving (Show, Eq)
 
 instance FromJSON SleepTime where
@@ -163,4 +168,36 @@ instance FromJSON SleepTime where
         <$> o .: "enabled"
         <*> o .:? "end_time"
         <*> o .:? "start_time"
+    parseJSON v = fail $ show v
+
+data TrendLocation = TrendLocation
+    { trendLocationName :: Text
+    , trendLocationCountryCode :: Maybe Value -- TODO
+    , trendLocationCountry :: Text
+    , trendParentId :: Maybe Int
+    , trendLocationUrl :: UrlString
+    , trendLocationPlaceType :: PlaceType
+    , trendLocationWoeId :: Int
+    } deriving (Show, Eq)
+
+instance FromJSON TrendLocation where
+    parseJSON (Object o) = TrendLocation
+        <$> o .: "name"
+        <*> o .:? "countryCode"
+        <*> o .: "country"
+        <*> o .:? "parentid"
+        <*> o .: "url"
+        <*> o .: "placeType"
+        <*> o .: "woeid"
+    parseJSON v = fail $ show v
+
+data PlaceType = PlaceType
+    { placeTypeName :: Text
+    , placeTypeCode :: Int
+    } deriving (Show, Eq)
+
+instance FromJSON PlaceType where
+    parseJSON (Object o) = PlaceType
+        <$> o .: "name"
+        <*> o .: "code"
     parseJSON v = fail $ show v
