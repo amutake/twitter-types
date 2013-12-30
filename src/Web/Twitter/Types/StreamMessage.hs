@@ -1,5 +1,5 @@
 module Web.Twitter.Types.StreamMessage
-    ( UserStreamMessage (..)
+    ( StreamMessage (..)
     , Event (..)
     , EventType (..)
     , EventTarget (..)
@@ -18,21 +18,21 @@ import Web.Twitter.Types.List
 import Web.Twitter.Types.Status
 import Web.Twitter.Types.User
 
-data UserStreamMessage
-    = UserStreamFriends [UserId]
-    | UserStreamEvent Event
-    | UserStreamStatusDeletion StatusDeletion
-    | UserStreamDirectMessage DirectMessage
-    | UserStreamStatus Status
+data StreamMessage
+    = StreamFriends [UserId]
+    | StreamEvent Event
+    | StreamStatusDeletion StatusDeletion
+    | StreamDirectMessage DirectMessage
+    | StreamStatus Status
     deriving (Show, Eq)
 
-instance FromJSON UserStreamMessage where
+instance FromJSON StreamMessage where
     parseJSON v@(Object o) =
-        UserStreamFriends <$> (o .: "friends") <|>
-        UserStreamEvent <$> a <|>
-        UserStreamStatusDeletion <$> (o .: "delete") <|>
-        UserStreamDirectMessage <$> (o .: "direct_message") <|>
-        UserStreamStatus <$> a
+        StreamFriends <$> (o .: "friends") <|>
+        StreamEvent <$> a <|>
+        StreamStatusDeletion <$> (o .: "delete") <|>
+        StreamDirectMessage <$> (o .: "direct_message") <|>
+        StreamStatus <$> a
       where
         a :: FromJSON a => Parser a
         a = parseJSON v
