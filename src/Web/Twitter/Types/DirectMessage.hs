@@ -1,18 +1,22 @@
 module Web.Twitter.Types.DirectMessage
     ( DirectMessage (..)
+    , DirectMessageId
     ) where
 
 import Control.Applicative ((<$>), (<*>))
 import Data.Aeson (FromJSON (..), Value (..), (.:))
+import Data.Int (Int64)
 import Data.Text (Text)
 
 import Web.Twitter.Types.Common
 import Web.Twitter.Types.Entities
 import Web.Twitter.Types.User
 
+type DirectMessageId = Int64
+
 -- | done.
 data DirectMessage = DirectMessage
-    { directMessageId :: StatusId
+    { directMessageId :: DirectMessageId
     , directMessageIdStr :: String
     , directMessageText :: Text
     , directMessageSender :: User
