@@ -1,6 +1,9 @@
 module Web.Twitter.Types.User
     ( User (..)
     , UserEntities (..)
+    , Account (..)
+    , TimeZone (..)
+    , SleepTime (..)
     ) where
 
 import Control.Applicative ((<$>), (<*>))
@@ -105,4 +108,59 @@ data UserEntities = UserEntities
 instance FromJSON UserEntities where
     parseJSON (Object o) = UserEntities
         <$> o .: "description"
+    parseJSON v = fail $ show v
+
+data Account = Account
+    { accountTimeZone :: TimeZone
+    , accountProtected :: Bool
+    , accountScreenName :: ScreenName
+    , accountAlwaysUseHttps :: Bool
+    , accountUseCookiePersonalization :: Bool
+    , accountSleepTime :: SleepTime
+    , accountGeoEnabled :: Bool
+    , accountLanguage :: LanguageCode
+    , accountDiscoverableByEmail :: Bool
+    , accountDiscoverableByMobilePhone :: Bool
+    , accountDisplaySensitiveMedia :: Bool
+    } deriving (Show, Eq)
+
+instance FromJSON Account where
+    parseJSON (Object o) = Account
+        <$> o .: "time_zone"
+        <*> o .: "protected"
+        <*> o .: "screen_name"
+        <*> o .: "always_use_https"
+        <*> o .: "use_cookie_personalization"
+        <*> o .: "sleep_time"
+        <*> o .: "geo_enabled"
+        <*> o .: "language"
+        <*> o .: "discoverable_by_email"
+        <*> o .: "discoverable_by_mobile_phone"
+        <*> o .: "display_sensitive_media"
+    parseJSON v = fail $ show v
+
+data TimeZone = TimeZone
+    { timeZoneName :: Text
+    , timeZoneUtcOffset :: Int
+    , timeZoneTZInfoName :: Text -- TODO: record name?
+    } deriving (Show, Eq)
+
+instance FromJSON TimeZone where
+    parseJSON (Object o) = TimeZone
+        <$> o .: "name"
+        <*> o .: "utc_offset"
+        <*> o .: "tzinfo_name"
+    parseJSON v = fail $ show v
+
+data SleepTime = SleepTime
+    { sleepTimeEnabled :: Bool
+    , sleepTimeEndTime :: Maybe Value -- TODO
+    , sleepTimeStartTime :: Maybe Value -- TODO
+    } deriving (Show, Eq)
+
+instance FromJSON SleepTime where
+    parseJSON (Object o) = SleepTime
+        <$> o .: "enabled"
+        <*> o .:? "end_time"
+        <*> o .:? "start_time"
     parseJSON v = fail $ show v
