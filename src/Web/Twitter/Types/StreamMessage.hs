@@ -14,6 +14,7 @@ import Data.Text (unpack)
 
 import Web.Twitter.Types.Common
 import Web.Twitter.Types.DirectMessage
+import Web.Twitter.Types.Internal
 import Web.Twitter.Types.List
 import Web.Twitter.Types.Status
 import Web.Twitter.Types.User
@@ -41,7 +42,7 @@ instance FromJSON StreamMessage where
 -- | done.
 data Event = Event
     { eventType :: EventType
-    , eventCreatedAt :: DateString
+    , eventCreatedAt :: UTCTime
     , eventSource :: User
     , eventTarget :: User
     , eventTargetObject :: Maybe EventTarget
@@ -50,7 +51,7 @@ data Event = Event
 instance FromJSON Event where
     parseJSON (Object o) = Event
         <$> o .: "event"
-        <*> o .: "created_at"
+        <*> parseUTCTime o "created_at"
         <*> o .: "source"
         <*> o .: "target"
         <*> o .:? "target_object"

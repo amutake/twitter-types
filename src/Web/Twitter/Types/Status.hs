@@ -6,11 +6,12 @@ import Data.Text (Text)
 
 import Web.Twitter.Types.Common
 import Web.Twitter.Types.Entities
+import Web.Twitter.Types.Internal
 import Web.Twitter.Types.User
 
 -- | <https://dev.twitter.com/docs/platform-objects/tweets> 2013-08-13 16:29
 data Status = Status
-    { statusCreatedAt :: DateString
+    { statusCreatedAt :: UTCTime
     , statusId :: StatusId
     , statusIdStr :: String
     , statusText :: Text
@@ -39,7 +40,7 @@ data Status = Status
 
 instance FromJSON Status where
     parseJSON (Object o) = Status
-         <$> o .: "created_at"
+         <$> parseUTCTime o "created_at"
          <*> o .: "id"
          <*> o .: "id_str"
          <*> o .: "text"

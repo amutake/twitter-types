@@ -10,6 +10,7 @@ import Data.Text (Text)
 
 import Web.Twitter.Types.Common
 import Web.Twitter.Types.Entities
+import Web.Twitter.Types.Internal
 import Web.Twitter.Types.User
 
 type DirectMessageId = Int64
@@ -27,7 +28,7 @@ data DirectMessage = DirectMessage
     , directMessageRecipientId :: UserId
     , directMessageRecipientIdStr :: String
     , directMessageRecipientScreeName :: ScreenName
-    , directMessageCreatedAt :: DateString
+    , directMessageCreatedAt :: UTCTime
     , directMessageEntities :: Entities
     } deriving (Show, Eq)
 
@@ -44,6 +45,6 @@ instance FromJSON DirectMessage where
         <*> o .: "recipient_id"
         <*> o .: "recipient_id_str"
         <*> o .: "recipient_screen_name"
-        <*> o .: "created_at"
+        <*> parseUTCTime o "created_at"
         <*> o .: "entities"
     parseJSON v = fail $ show v

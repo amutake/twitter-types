@@ -5,6 +5,7 @@ import Data.Aeson (FromJSON (..), Value (..), (.:), (.:?))
 import Data.Text (Text)
 
 import Web.Twitter.Types.Common
+import Web.Twitter.Types.Internal
 import Web.Twitter.Types.User
 
 data SearchResult body = SearchResult
@@ -19,7 +20,7 @@ instance FromJSON body => FromJSON (SearchResult body) where
     parseJSON v = fail $ show v
 
 data SearchStatus = SearchStatus
-    { searchStatusCreatedAt :: DateString
+    { searchStatusCreatedAt :: UTCTime
     , searchStatusId :: StatusId
     , searchStatusText :: Text
     , searchStatusSource :: Text
@@ -28,7 +29,7 @@ data SearchStatus = SearchStatus
 
 instance FromJSON SearchStatus where
     parseJSON (Object o) = SearchStatus
-        <$> o .:  "created_at"
+        <$> parseUTCTime o "created_at"
         <*> o .:  "id"
         <*> o .:  "text"
         <*> o .:  "source"

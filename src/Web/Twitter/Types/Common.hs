@@ -3,11 +3,11 @@ module Web.Twitter.Types.Common
     , UserName
     , ScreenName
     , UrlString
-    , DateString
     , StatusId
     , LanguageCode
     , IntStrs (..)
     , Ids (..)
+    , UTCTime (..)
     ) where
 
 import Control.Applicative ((<$>), (<*>), (<|>))
@@ -15,11 +15,12 @@ import Data.Aeson (FromJSON (..), Value (..), (.:))
 import Data.Int (Int64)
 import Data.Text (Text)
 
+import Web.Twitter.Types.Internal
+
 type UserId = Int64
 type UserName = Text
 type ScreenName = Text
 type UrlString = Text -- TODO
-type DateString = Text
 type StatusId = Int64
 type LanguageCode = Text -- TODO
 

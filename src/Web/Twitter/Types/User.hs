@@ -15,6 +15,7 @@ import Data.Text (Text)
 
 import Web.Twitter.Types.Common
 import Web.Twitter.Types.Entities
+import Web.Twitter.Types.Internal
 
 type ColorCode = Text -- TODO
 
@@ -31,7 +32,7 @@ data User = User
     , userFollowersCount :: Int
     , userFriendsCount :: Int
     , userListedCount :: Int
-    , userCreatedAt :: DateString
+    , userCreatedAt :: UTCTime
     , userFavouritesCount :: Int -- ^ British spelling used in the field name for historical reasons.
     , userUtcOffset :: Maybe Int
     , userTimeZone :: Maybe Text -- TODO
@@ -74,7 +75,7 @@ instance FromJSON User where
         <*> o .: "followers_count"
         <*> o .: "friends_count"
         <*> o .: "listed_count"
-        <*> o .: "created_at"
+        <*> parseUTCTime o "created_at"
         <*> o .: "favourites_count"
         <*> o .:? "utc_offset"
         <*> o .: "time_zone"

@@ -26,10 +26,13 @@ library
                        Web.Twitter.Types.Status
                        Web.Twitter.Types.StreamMessage
                        Web.Twitter.Types.User
+  other-modules:       Web.Twitter.Types.Internal
   build-depends:       base== 4.*
                      , bytestring
                      , text
                      , aeson
+                     , old-locale
+                     , time
   hs-source-dirs:      src
   ghc-options:         -Wall
   default-extensions:  OverloadedStrings
