@@ -12,17 +12,16 @@ module Web.Twitter.Types.Common
 
 import Control.Applicative ((<$>), (<*>), (<|>))
 import Data.Aeson (FromJSON (..), Value (..), (.:))
-import Data.ByteString (ByteString)
 import Data.Int (Int64)
 import Data.Text (Text)
 
 type UserId = Int64
 type UserName = Text
 type ScreenName = Text
-type UrlString = ByteString -- TODO
-type DateString = Text -- TODO
+type UrlString = Text -- TODO
+type DateString = Text
 type StatusId = Int64
-type LanguageCode = ByteString -- TODO
+type LanguageCode = Text -- TODO
 
 data IntStrs = Ints [Int64] | Strs [String] deriving (Show, Eq)
 
